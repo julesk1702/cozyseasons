@@ -1,26 +1,183 @@
 @import "tailwindcss";
 
+/* ===== Base background and text ===== */
+/* defaults (christmas) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0e1222;
+  --foreground: #f7fafc;
+  --accent: #ffffff; /* used for controls/wave/etc */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* CHRISTMAS THEME */
+body[data-theme="christmas"] {
+  --background: #0e1222;
+  --foreground: #f7fafc;
+  --accent: #ffffff;
+  background: radial-gradient(
+      1200px 600px at 50% -10%,
+      #1a2040 0%,
+      transparent 60%
+    ),
+    linear-gradient(180deg, #0b0f1e 0%, #0e1222 50%, #0b0f1e 100%);
+  color: var(--foreground);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* HALLOWEEN THEME */
+body[data-theme="halloween"] {
+  --background: #1a0f13; /* deep plum/burgundy night */
+  --foreground: #ffe7d1; /* warm parchment text */
+  --accent: #ffb648; /* pumpkin glow */
+  background: radial-gradient(
+      900px 500px at 50% -10%,
+      #3b1c12 0%,
+      transparent 60%
+    ),
+    linear-gradient(180deg, #1a0f13 0%, #0e090b 50%, #1a0f13 100%);
+  color: var(--foreground);
+}
+
+/* keep your existing styles below... (snow, sliders, etc.) */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ===== Snow animation ===== */
+@keyframes snow-fall {
+  0% {
+    transform: translateY(-10vh) translateX(var(--sx, 0));
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) translateX(calc(var(--sx, 0) * 2));
+    opacity: 0.9;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes snow-sway {
+  0% {
+    margin-left: 0;
+  }
+  50% {
+    margin-left: var(--sway, 12px);
+  }
+  100% {
+    margin-left: 0;
+  }
+}
+
+.snow-layer {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.snowflake {
+  position: absolute;
+  top: -2rem;
+  width: var(--size, 6px);
+  height: var(--size, 6px);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    #fff 0%,
+    #e9f2ff 60%,
+    #cbd6ff 100%
+  );
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+  animation: snow-fall var(--fall, 12s) linear var(--delay, 0s) infinite,
+    snow-sway var(--swaydur, 6s) ease-in-out var(--delay, 0s) infinite;
+}
+
+/* Control bubble basics (Tailwind styles are mostly used but these are safe) */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #fff;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #fff;
+  border: none;
+}
+
+.section {
+  min-height: 100svh; /* handles mobile browser UI better than 100vh */
+}
+
+.pumpkin-layer {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 10;
+}
+.pumpkin {
+  position: absolute;
+  top: -3rem;
+  width: var(--size, 6px);
+  height: var(--size, 6px);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    #ffb648 0%,
+    #ffa500 60%,
+    #cc8400 100%
+  );
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+  animation: snow-fall var(--fall, 12s) linear var(--delay, 0s) infinite,
+    snow-sway var(--swaydur, 6s) ease-in-out var(--delay, 0s) infinite;
+}
+.pumpkin span {
+  display: inline-block;
+  transform: translateZ(0);
+}
+
+/* Mini player shell and panel */
+.player-shell {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom) + 1rem);
+  right: calc(env(safe-area-inset-right) + 1rem);
+  z-index: 50;
+  /* Controls the visible sliver when collapsed */
+  --peek: 56px; /* play btn (36px) + padding */
+}
+
+.player-panel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 1rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.25);
+  border: 1px solid color-mix(in oklab, var(--foreground) 15%, transparent);
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+
+  /* Slide to the right while leaving --peek visible */
+  transform: translateX(var(--slide, 0));
+  transition: transform .35s ease;
+  will-change: transform;
+}
+
+/* Accessibility: respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .player-panel { transition: none; }
 }
