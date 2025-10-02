@@ -119,7 +119,7 @@ export default function TrackList({ season, setLoading }) {
 
   if (!tracks.length) {
     return (
-      <section className="section relative z-10 flex flex-col items-center justify-center px-4 text-center">
+      <section id="tracks" className="section relative z-10 flex flex-col items-center justify-center px-4 text-center">
         <div
           className="max-w-xl"
           style={{ fontSize: "1rem", fontWeight: "900" }}
