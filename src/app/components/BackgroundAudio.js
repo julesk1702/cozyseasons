@@ -83,9 +83,8 @@ export default function BackgroundAudio() {
 
   // Persist volume
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined")
       localStorage.setItem("xmas_volume", String(volume));
-    }
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
@@ -211,8 +210,6 @@ export default function BackgroundAudio() {
       <div
         className="player-shell"
         style={{
-          // constant visible peek across devices
-          // adjust once here if you want a bigger/smaller peek
           ["--peek"]: "56px",
           position: "fixed",
           bottom: "calc(env(safe-area-inset-bottom) + 1rem)",
@@ -243,8 +240,8 @@ export default function BackgroundAudio() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "0.75rem",
-            padding: "0.75rem",
+            gap: "0.6rem",
+            padding: "0.65rem",
             borderRadius: "1rem",
             backdropFilter: "blur(8px)",
             boxShadow: "0 10px 24px rgba(0,0,0,.25)",
@@ -258,6 +255,7 @@ export default function BackgroundAudio() {
               : "translateX(0)",
             transition: "transform .35s ease",
             willChange: "transform",
+            maxWidth: "92vw", // never exceed viewport
           }}
         >
           {/* Play / Pause — first so it stays visible when collapsed */}
@@ -278,7 +276,7 @@ export default function BackgroundAudio() {
               }
               bumpActivity();
             }}
-            className="inline-flex items-center justify-center w-9 h-9 rounded-full border hover:opacity-90 transition"
+            className="inline-flex items-center justify-center w-9 h-9 rounded-full border hover:opacity-90 transition shrink-0"
             style={{
               borderColor:
                 "color-mix(in oklab, var(--foreground) 20%, transparent)",
@@ -306,9 +304,10 @@ export default function BackgroundAudio() {
             )}
           </button>
 
-          {/* Progress */}
-          <div className="flex items-center gap-2 w-56">
-            <span className="text-[10px] opacity-75 tabular-nums w-8 text-right">
+          {/* Progress — responsive width */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Hide time stamps on tiny screens */}
+            <span className="time-start text-[10px] opacity-75 tabular-nums w-8 text-right hidden xs:inline-block">
               {formatTime(time)}
             </span>
             <input
@@ -322,23 +321,34 @@ export default function BackgroundAudio() {
               onChange={onSeekChange}
               onMouseUp={onSeekEnd}
               onTouchEnd={onSeekEnd}
-              className="flex-1"
+              className="progress flex-1 w-[46vw] sm:w-56"
               title="Seek"
               disabled={!duration}
               style={{ accentColor: "var(--accent)" }}
             />
-            <span className="text-[10px] opacity-75 tabular-nums w-8">
+            <span className="time-end text-[10px] opacity-75 tabular-nums w-8 hidden xs:inline-block">
               {formatTime(duration)}
             </span>
           </div>
 
-          {/* Now playing */}
-          <div className="text-xs opacity-80 max-w-[12rem] truncate">
-            {currentTitle || "Loading tracks…"}
+          {/* Now playing — truncate and shrink on small screens */}
+          <div
+            className="np text-xs opacity-80 truncate"
+            style={{
+              maxWidth: "32vw", // small phones
+            }}
+          >
+            <span className="hidden sm:inline">
+              {currentTitle || "Loading tracks…"}
+            </span>
+            <span className="sm:hidden">
+              {(currentTitle || "Loading…").slice(0, 18)}
+              {(currentTitle || "").length > 18 ? "…" : ""}
+            </span>
           </div>
 
           {blocked && (
-            <span className="text-xs opacity-75">Tap play to start audio</span>
+            <span className="text-[10px] opacity-75 shrink-0">Tap play</span>
           )}
         </div>
       </div>

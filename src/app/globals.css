@@ -167,17 +167,43 @@ input[type="range"]::-moz-range-thumb {
   padding: 0.75rem;
   border-radius: 1rem;
   backdrop-filter: blur(8px);
-  box-shadow: 0 10px 24px rgba(0,0,0,.25);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
   border: 1px solid color-mix(in oklab, var(--foreground) 15%, transparent);
   background: color-mix(in oklab, var(--foreground) 8%, transparent);
 
   /* Slide to the right while leaving --peek visible */
   transform: translateX(var(--slide, 0));
-  transition: transform .35s ease;
+  transition: transform 0.35s ease;
   will-change: transform;
 }
 
 /* Accessibility: respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .player-panel { transition: none; }
+  .player-panel {
+    transition: none;
+  }
+}
+
+/* Show/hide tiny helpers for very small screens */
+@media (max-width: 380px) {
+  .player-shell {
+    --peek: 48px;
+  }
+  .player-panel .progress {
+    width: 52vw !important;
+  }
+  .player-panel .np {
+    max-width: 28vw !important;
+  }
+}
+
+/* a micro breakpoint so time stamps don't force wrap */
+@media (max-width: 330px) {
+  .player-panel .time-start,
+  .player-panel .time-end {
+    display: none !important;
+  }
+  .player-panel .progress {
+    width: 58vw !important;
+  }
 }

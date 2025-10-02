@@ -50,8 +50,28 @@ function SeasonSwitcher() {
   );
 }
 
+function useDigitSize() {
+  const [size, setSize] = useState(64);
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      // Tune these breakpoints as you like
+      if (w < 340) setSize(32);
+      else if (w < 380) setSize(36);
+      else if (w < 420) setSize(40);
+      else if (w < 640) setSize(48);
+      else setSize(64);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  return size;
+}
+
 function Countdown({ targetDate }) {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft());
+  const digitSize = useDigitSize();
 
   function getTimeLeft() {
     const now = new Date();
@@ -66,88 +86,69 @@ function Countdown({ targetDate }) {
   }
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(getTimeLeft());
-    }, 1000);
+    const interval = setInterval(() => setTimeLeft(getTimeLeft()), 1000);
     return () => clearInterval(interval);
   }, []);
 
-  console.log(timeLeft.d);
+  const sepStyle = {
+    fontSize: digitSize,
+    fontWeight: 900,
+    color: "white",
+    lineHeight: 1,
+    display: "inline-block",
+    verticalAlign: "top",
+  };
 
   return (
-    <>
-      <div>
-        <Counter
-          value={timeLeft.d}
-          places={[10, 1]}
-          fontSize={64}
-          padding={5}
-          gap={4}
-          textColor="white"
-          fontWeight={900}
-        />
-        <span
-          style={{
-            fontSize: "64px",
-            fontWeight: "900",
-            color: "white",
-            display: "inline-block",
-            verticalAlign: "top",
-          }}
-        >
-          :
-        </span>
-        <Counter
-          value={timeLeft.h}
-          places={[10, 1]}
-          fontSize={64}
-          padding={5}
-          gap={4}
-          textColor="white"
-          fontWeight={900}
-        />
-        <span
-          style={{
-            fontSize: "64px",
-            fontWeight: "900",
-            color: "white",
-            display: "inline-block",
-            verticalAlign: "top",
-          }}
-        >
-          :
-        </span>
-        <Counter
-          value={timeLeft.m}
-          places={[10, 1]}
-          fontSize={64}
-          padding={5}
-          gap={4}
-          textColor="white"
-          fontWeight={900}
-        />
-        <span
-          style={{
-            fontSize: "64px",
-            fontWeight: "900",
-            color: "white",
-            display: "inline-block",
-            verticalAlign: "top",
-          }}
-        >
-          :
-        </span>
-        <Counter
-          value={timeLeft.s}
-          places={[10, 1]}
-          fontSize={64}
-          padding={5}
-          gap={4}
-          textColor="white"
-          fontWeight={900}
-        />
-      </div>
-    </>
+    <div
+      className="countdown-row"
+      style={{
+        display: "inline-flex",
+        alignItems: "flex-start",
+        gap: 6,
+        whiteSpace: "nowrap", // keep on one line
+      }}
+    >
+      <Counter
+        value={timeLeft.d}
+        places={[10, 1]}
+        fontSize={digitSize}
+        padding={5}
+        gap={4}
+        textColor="white"
+        fontWeight={900}
+      />
+      <span style={sepStyle}>:</span>
+      <Counter
+        value={timeLeft.h}
+        places={[10, 1]}
+        fontSize={digitSize}
+        padding={5}
+        gap={4}
+        textColor="white"
+        fontWeight={900}
+      />
+      <span style={sepStyle}>:</span>
+      <Counter
+        value={timeLeft.m}
+        places={[10, 1]}
+        fontSize={digitSize}
+        padding={5}
+        gap={4}
+        textColor="white"
+        fontWeight={900}
+      />
+      <span style={sepStyle}>:</span>
+      <Counter
+        value={timeLeft.s}
+        places={[10, 1]}
+        fontSize={digitSize}
+        padding={5}
+        gap={4}
+        textColor="white"
+        fontWeight={900}
+      />
+    </div>
   );
 }
 
