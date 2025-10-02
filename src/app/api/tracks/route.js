@@ -1,37 +1,29 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
 
+export const runtime = "edge"; // no Node fs, tiny & fast
 const ALLOWED = new Set(["christmas", "halloween"]);
 
 export async function GET(req) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const season = searchParams.get("season")?.toLowerCase() || "christmas";
-    const safeSeason = ALLOWED.has(season) ? season : "christmas";
+  const { searchParams } = new URL(req.url);
+  const raw = (searchParams.get("season") || "christmas").toLowerCase();
+  const season = ALLOWED.has(raw) ? raw : "christmas";
 
-    const dir = path.join(process.cwd(), "public", "audio", safeSeason);
-    const names = await fs.readdir(dir);
-
-    const exts = new Set([".mp3", ".m4a", ".aac", ".ogg", ".wav"]);
-    const files = names
-      .filter((n) => exts.has(path.extname(n).toLowerCase()))
-      .sort();
-
-    const tracks = files.map((f) => {
-      const url = `/audio/${safeSeason}/${f}`;
-      const base = f.replace(/\.[^.]+$/, "");
-      const title = decodeURIComponent(base.replace(/[_-]+/g, " ").trim());
-      return { url, title, season: safeSeason };
-    });
-
+  // Read the prebuilt manifest from /public (static)
+  const manifestUrl = new URL("/audio-manifest.json", req.url);
+  const res = await fetch(manifestUrl.toString(), { cache: "no-store" });
+  if (!res.ok) {
     return NextResponse.json(
-      { season: safeSeason, tracks },
-      {
-        headers: { "Cache-Control": "no-store" },
-      }
+      { tracks: [], error: "Manifest not found" },
+      { status: 500 }
     );
-  } catch (e) {
-    return NextResponse.json({ tracks: [], error: e.message }, { status: 500 });
   }
+
+  const manifest = await res.json();
+  const tracks = manifest?.seasons?.[season] ?? [];
+  return NextResponse.json(
+    { season, tracks },
+    {
+      headers: { "Cache-Control": "no-store" },
+    }
+  );
 }
